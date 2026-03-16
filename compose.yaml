@@ -71,6 +71,19 @@ services:
     volumes:
     - ./shared/logger:./app/logger
 
+  damage_service:
+    build: ./damage_service
+    container_name: damage_service
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      MONGO_URI: mongodb://mongodb:27017
+      TOPIC: intel
+      ERR_TOPIC: intel_signals_dlq
+      DB_NAME: test
+      COL_NAME: bank_goals
+    volumes:
+    - ./shared/logger:./app/logger
+
 
 
 volumes:
