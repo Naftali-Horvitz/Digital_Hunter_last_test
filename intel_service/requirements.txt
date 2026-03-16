@@ -1,1 +1,1 @@
-confluent_kafka==2.2.3
+confluent_kafka
