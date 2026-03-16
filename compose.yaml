@@ -1,5 +1,4 @@
 services:
-  
   kafka:
     image: confluentinc/cp-kafka:7.8.3
     container_name: kafka
@@ -7,21 +6,17 @@ services:
       - "9092:9092"
 
     environment:
-      KAFKA_KRAFT_MODE: 'true'
-
-      CLUSTER_ID: '1L6g7nGhU-eAKfL--X25wo'
+      # Configure listeners for both docker and host communication
+      KAFKA_LISTENERS: CONTROLLER://localhost:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT
       KAFKA_NODE_ID: 1
-
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9091
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
-  
     volumes:
       - kafka_kraft:/var/lib/kafka/data
 
@@ -29,9 +24,9 @@ services:
     container_name: mongodb
     image: mongo:7
     ports:
-    - 27017:27017
+      - 27017:27017
     volumes:
-    - mongodb_data:/data/db
+      - mongodb_data:/data/db
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.4
@@ -42,49 +37,46 @@ services:
     ports:
       - "9200:9200"
     volumes:
-    - elasticsearch_data:/usr/share/elasticsearch/data
-
+      - elasticsearch_data:/usr/share/elasticsearch/data
 
   intel_service:
     build: ./intel_service
     container_name: intel_service
     environment:
-      BOOTSTRAP_SERVERS: kafka:9092
+      BOOTSTRAP_SERVERS: kafka:9093
       MONGO_URI: mongodb://mongodb:27017
       TOPIC: intel
       ERR_TOPIC: intel_signals_dlq
       DB_NAME: test
       COL_NAME: bank_goals
     volumes:
-    - ./shared/logger:./app/logger
-  
+      - ./shared/logger:./app/logger
+
   attack_service:
     build: ./attack_service
     container_name: attack_service
     environment:
-      BOOTSTRAP_SERVERS: kafka:9092
+      BOOTSTRAP_SERVERS: kafka:9093
       MONGO_URI: mongodb://mongodb:27017
       TOPIC: intel
       ERR_TOPIC: intel_signals_dlq
       DB_NAME: test
       COL_NAME: bank_goals
     volumes:
-    - ./shared/logger:./app/logger
+      - ./shared/logger:./app/logger
 
   damage_service:
     build: ./damage_service
     container_name: damage_service
     environment:
-      BOOTSTRAP_SERVERS: kafka:9092
+      BOOTSTRAP_SERVERS: kafka:9093
       MONGO_URI: mongodb://mongodb:27017
       TOPIC: intel
       ERR_TOPIC: intel_signals_dlq
       DB_NAME: test
       COL_NAME: bank_goals
     volumes:
-    - ./shared/logger:./app/logger
-
-
+      - ./shared/logger:./app/logger
 
 volumes:
   kafka_kraft:
