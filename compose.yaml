@@ -73,7 +73,6 @@ services:
 
 
 
-
 volumes:
   kafka_kraft:
   mongodb_data:
