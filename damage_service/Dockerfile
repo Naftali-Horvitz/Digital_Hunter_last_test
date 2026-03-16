@@ -1,8 +1,8 @@
-FROM
+FROM python:1.3-slim
 
-WORKDIR
+WORKDIR ./
 
-COPY
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
