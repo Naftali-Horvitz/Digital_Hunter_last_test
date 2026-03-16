@@ -2,8 +2,8 @@ from confluent_kafka import Consumer, KafkaException
 from logger.logger import log_event
 from typing import Callable
 import json
-
-class consumer_kafka:
+from rich import print as rprint
+class KafkaConsumer:
     def __init__(self, bootstrap_servers: str, topic: str):
         config = {
             "bootstrap.servers" : bootstrap_servers,
@@ -13,10 +13,8 @@ class consumer_kafka:
         try:
             self.consumer = Consumer(config)
             self.consumer.subscribe([topic])
-            print("🟢 Consumer is running and subscribed to orders topic")
-            log_event(level="info", message=f"Consumer is running and subscribed to {topic} topic")
+            log_event(level="info", message=f"🟢 Consumer is running and subscribed to {topic} topic")
         except KafkaException as e:
-            print("Consumer failed running")
             log_event(level="error", message=f"Consumer failed running: {e}")
     
     def start(self, callable: Callable):
@@ -26,15 +24,23 @@ class consumer_kafka:
                 if msg is None:
                     continue
                 if msg.error():
-                    log_event(level="error", message=f"msg error: {msg.error()}")
-                    print("❌ Error:", msg.error())
+                    log_event(level="error", message=f"❌ msg error: {msg.error()}")
                     continue
-                value = msg.value().decode("utf-8")
-                intelligence_data = json.loads(value)
-                print(f"intelligence data: {intelligence_data}")
-                callable(intelligence_data)
+                try:
+                    value = msg.value().decode("utf-8")
+                    intelligence_data = json.loads(value)
+                    log_event(level="debug", message=f"intelligence data: {intelligence_data}")
+                    callable(intelligence_data)
+                except Exception as e:
+                    log_event(level="error", message=f"{e}")
         except Exception as e:
-            print(f"\n🔴 Stopping consumer: {e}")
+            log_event(level="error", message=f"🔴 Stopping consumer: {e}")
+            
         finally:
             self.consumer.close()
-                    
+            
+            
+            
+if __name__ =="__main__":
+    c = KafkaConsumer("localhost:9092", "intel")
+    c.start()
