@@ -50,7 +50,7 @@ services:
       DB_NAME: test
       COL_NAME: bank_goals
     volumes:
-      - ./shared:./app/logger
+      - ./shared/logger:/app/logger
 
   attack_service:
     build: ./attack_service
@@ -63,7 +63,7 @@ services:
       DB_NAME: test
       COL_NAME: bank_goals
     volumes:
-      - ./shared:./app/logger
+      - ./shared/logger:/app/logger
 
   damage_service:
     build: ./damage_service
@@ -76,7 +76,7 @@ services:
       DB_NAME: test
       COL_NAME: bank_goals
     volumes:
-      - ./shared:./app/logger
+      - ./shared/logger:/app/logger
 
 volumes:
   kafka_kraft:
